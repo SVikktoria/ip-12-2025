@@ -14,7 +14,7 @@ class FileNotFound(OSError):
     """
     pass
 
-class FileCorrupted(FileError):
+class FileCorrupted(OSError):
     """
     Файл пошкоджено або має неправильний формат
     """
@@ -182,3 +182,4 @@ if __name__ == "__main__":
     print(f"   - XML файл: {xml_path}")
 
     print("   - Логи в logging.txt (якщо були помилки)")
+
