@@ -8,7 +8,7 @@ class FileError(Exception):
     """
     pass
 
-class FileNotFound(FileError):
+class FileNotFound(OSError):
     """
     Файл не знайдено.
     """
@@ -180,4 +180,5 @@ if __name__ == "__main__":
     print("=== Тестування з XTM файлом ===")
     print("\n Готово! Перевірте:")
     print(f"   - XML файл: {xml_path}")
+
     print("   - Логи в logging.txt (якщо були помилки)")
