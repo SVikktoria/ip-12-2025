@@ -62,7 +62,7 @@ def logged(exception, mode="console"):
 
 class XMLFileManager:
     """ 
-    Клас для керування XML файлами 
+    Class for managing XML files
     """
 
     def __init__(self, filepath: str):
@@ -77,7 +77,7 @@ class XMLFileManager:
     @logged(FileCorrupted, mode="file")
     def read(self):
         """
-        Читання XML та повернення списку рядків <line>.
+        Reading XML and returning a list of lines <line>.
         """
         try:
             tree = ET.parse(self.filepath)
@@ -96,7 +96,7 @@ class XMLFileManager:
     @logged(FileCorrupted, mode="console")
     def write(self, data: str):
         """
-        Запис тексту у форматі XML, де кожен рядок стає <line>.
+        Writing text in XML format, where each line becomes a <line>.
         """
         try:
             root = ET.Element("data")
@@ -111,7 +111,7 @@ class XMLFileManager:
     @logged(FileCorrupted, mode="file")
     def append(self, data: str):
         """
-        Дописує нові рядки у вже існуючий XML-файл.
+        Appends new lines to an existing XML file.
         """
         try:
             try:
@@ -131,7 +131,7 @@ class XMLFileManager:
 
     @logged(FileNotFound, mode="console")
     def get_root_tag(self):
-        """Додатковий метод для отримання кореневого тегу"""
+"""Additional method for getting the root tag"""
         try:
             tree = ET.parse(self.filepath)
             return tree.getroot().tag
