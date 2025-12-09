@@ -4,24 +4,24 @@ import xml.etree.ElementTree as ET
 
 class FileError(Exception):
     """
-    Базовий виняток для роботи з файлами
+    Basic exception for working with files
     """
     pass
 
 class FileNotFound(OSError):
     """
-    Файл не знайдено.
+    File not found.
     """
     pass
 
 class FileCorrupted(FileError):
     """
-    Файл пошкоджено або має неправильний формат
+    The file is corrupt or in the wrong format.
     """
     pass
 
 class FileTypeError(FileError):
-    """Файл має неправильний тип"""
+    """The file is of the wrong type."""
     pass
 
 logging.basicConfig(level=logging.ERROR)
@@ -29,9 +29,9 @@ logging.basicConfig(level=logging.ERROR)
 
 def logged(exception, mode="console"):
     """
-    Декоратор для логування винятів
-    :param exception: тип винятку для логшування
-    :param mode: "console" або "file"
+    Decorator for logging exceptions
+:param exception: type of exception to log
+:param mode: "console" or "file"
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
@@ -150,21 +150,21 @@ if __name__ == "__main__":
         content = xml_manager.read()
         print(f"   Зчитано {len(content)} рядків: {content}")
         
-        print("\n2. Отримуємо кореневий тег...")
+        print("\n 2. Отримуємо кореневий тег...")
         root_tag = xml_manager.get_root_tag()
         print(f"   Кореневий тег: {root_tag}")
         
-        print("\n3. Перезаписуємо файл...")
+        print("\n 3. Перезаписуємо файл...")
         new_data = "Перший рядок\nДругий рядок\nТретій рядок"
         xml_manager.write(new_data)
         print("   Файл перезаписано")
         
-        print("\n4. Дописуємо до файлу...")
+        print("\n 4.Дописуємо до файлу...")
         additional_data = "Четвертий рядок\nП'ятий рядок"
         xml_manager.append(additional_data)
         print("   Дані дописано")
         
-        print("\n5. Перевіряємо результат...")
+        print("\n 5.Перевіряємо результат...")
         final_content = xml_manager.read()
         print(f"   Фінальний вміст: {final_content}")
         
