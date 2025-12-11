@@ -30,10 +30,11 @@ logging.basicConfig(level=logging.ERROR)
 def logged(exception, mode="console"):
     """
     Decorator for logging exceptions
-:param exception: type of exception to log
-:param mode: "console" or "file"
+    :param exception: type of exception to log
+    :param mode: "console" or "file"
     """
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
             logger = logging.getLogger(func.__name__)
             logger.setLevel(logging.ERROR)
