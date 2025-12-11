@@ -1,0 +1,186 @@
+import logging
+import os
+import xml.etree.ElementTree as ET
+
+class FileError(Exception):
+    """
+    Basic exception for working with files
+    """
+    pass
+
+class FileNotFound(OSError):
+    """
+    File not found.
+    """
+    pass
+
+class FileCorrupted(FileError):
+    """
+    The file is corrupt or in the wrong format.
+    """
+    pass
+
+class FileTypeError(FileError):
+    """The file is of the wrong type."""
+    pass
+
+logging.basicConfig(level=logging.ERROR)
+
+
+def logged(exception, mode="console"):
+    """
+    Decorator for logging exceptions
+    :param exception: type of exception to log
+    :param mode: "console" or "file"
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            logger = logging.getLogger(func.__name__)
+            logger.setLevel(logging.ERROR)
+
+            if mode == "console":
+                handler = logging.StreamHandler()
+            elif mode == "file":
+                handler = logging.FileHandler("logging.txt", mode='a', encoding="utf-8")
+            else:
+                raise ValueError("Режим може бути лише 'console' або'file'")
+
+            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+
+            try:
+                return func(*args, **kwargs)
+            except exception as e:
+                logger.error(f"Exception in {func.__name__}: {e}")
+                raise
+            finally:
+                logger.removeHandler(handler)
+
+        return wrapper
+    return decorator
+
+class XMLFileManager:
+    """ 
+    Class for managing XML files
+    """
+
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+
+        if not os.path.exists(filepath):
+            raise FileNotFound(f"Файл '{filepath}' не існує!")
+
+        if not filepath.lower().endswith(".xml"):
+            raise FileTypeError("Файл повинен мати розширення .xml!")
+
+    @logged(FileCorrupted, mode="file")
+    def read(self):
+        """
+        Reading XML and returning a list of lines <line>.
+        """
+        try:
+            tree = ET.parse(self.filepath)
+            root = tree.getroot()
+            if root is None:
+                raise FileCorrupted("XML файл порожній або пошкоджений")
+            lines = []
+            for line_elem in root.findall(".//line"):
+                if line_elem.text:
+                    lines.append(line_elem.text)
+            return lines
+        except ET.ParseError as e:
+            raise FileCorrupted(f"XML файл пошкоджений: {e}")
+        except Exception as e:
+            raise FileCorrupted(f"Не вдалося прочитати файл: {e}")
+    @logged(FileCorrupted, mode="console")
+    def write(self, data: str):
+        """
+        Writing text in XML format, where each line becomes a <line>.
+        """
+        try:
+            root = ET.Element("data")
+            lines = data.split('\n')
+            for line in lines:
+                ET.SubElement(root, "line").text = line
+            tree = ET.ElementTree(root)
+            tree.write(self.filepath, encoding="utf-8", xml_declaration=True)
+        except Exception as e:
+            raise FileCorrupted(f"Не вдалося записати в XML файл. Деталі: {e}")
+
+    @logged(FileCorrupted, mode="file")
+    def append(self, data: str):
+        """
+        Appends new lines to an existing XML file.
+        """
+        try:
+            try:
+                tree = ET.parse(self.filepath)
+                root = tree.getroot()
+            except Exception:
+                raise FileCorrupted("XML файл пошкоджено або має неправильний формат.")
+
+            lines = data.split('\n')
+            for line in lines:
+                ET.SubElement(root, "line").text = line
+
+            tree.write(self.filepath, encoding="utf-8", xml_declaration=True)
+
+        except Exception as e:
+            raise FileCorrupted(f"Не вдалося дописати в XML файл. Деталі: {e}")
+
+    @logged(FileNotFound, mode="console")
+    def get_root_tag(self):
+"""Additional method for getting the root tag"""
+        try:
+            tree = ET.parse(self.filepath)
+            return tree.getroot().tag
+        except Exception as e:
+            raise FileCorrupted(f"Не вдалося отримати кореневий тег: {e}")
+
+if __name__ == "__main__":
+    print("=== Тестування з XML файлом ===")
+    xml_path = "data.xml"
+    
+    try:
+        xml_manager = XMLFileManager(xml_path)
+        print(f"Тип файлу: {xml_manager}")
+        
+        print("1. Читаємо вміст файлу...")
+        content = xml_manager.read()
+        print(f"   Зчитано {len(content)} рядків: {content}")
+        
+        print("\n 2. Отримуємо кореневий тег...")
+        root_tag = xml_manager.get_root_tag()
+        print(f"   Кореневий тег: {root_tag}")
+        
+        print("\n 3. Перезаписуємо файл...")
+        new_data = "Перший рядок\nДругий рядок\nТретій рядок"
+        xml_manager.write(new_data)
+        print("   Файл перезаписано")
+        
+        print("\n 4.Дописуємо до файлу...")
+        additional_data = "Четвертий рядок\nП'ятий рядок"
+        xml_manager.append(additional_data)
+        print("   Дані дописано")
+        
+        print("\n 5.Перевіряємо результат...")
+        final_content = xml_manager.read()
+        print(f"   Фінальний вміст: {final_content}")
+        
+    except (FileNotFound, FileTypeError, FileCorrupted) as e:
+        print(f" Помилка: {e}")
+    except Exception as e:
+        print(f" Неочікувана помилка: {e}") 
+    except (FileNotFound, FileTypeError, FileCorrupted) as e:
+        print(f" Помилка: {e}")
+    except Exception as e:
+        print(f" Неочікувана помилка: {e}")
+
+    print("=== Тестування з XTM файлом ===")
+    print("\n Готово! Перевірте:")
+    print(f"   - XML файл: {xml_path}")
+
+    print("   - Логи в logging.txt (якщо були помилки)")
+
